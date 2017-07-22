@@ -1,0 +1,148 @@
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>必殺技バトル</title>
+</head>
+
+<body>
+<style>
+	body{
+		background-color: #666;
+		color: white;
+	}
+	.play1{
+		background-color: #ee4444;
+	}
+	.player{
+		width: 50%;
+		box-sizing: border-box;
+		padding: 0 20px;
+		float: left;
+	}
+	.play2{
+		background-color: #4444ee;
+	}
+
+</style>
+
+
+<h1>必殺技バトル</h1>
+<p>ルール：交互に必殺技を言い、相手のHPを無くした方が勝ち。<small>※PCのGoogle Chromeでのみ動作します。</small></p>
+<p>調子が悪い時はGoogle Chromeを再起動、ブラウザをリロードしてみてください。</p>
+<div class="player play1">
+	<h2>プレイヤー１(先行)</h2>
+	<p>HP: <span id="hp1">30</span></p>
+	<input id="start01" type="button" value="必殺技を言う"/>
+	<div class="state">停止中</div>
+	<p>技名: <span id="recognizedText1"></span></p>
+	<p>技の戦闘力: <span id="viewText1"></span></p>
+</div>
+
+<div class="player play2">
+	<h2>プレイヤー２(後攻)</h2>
+	<p>HP: <span id="hp2">35</span></p>
+	<input id="start02" type="button" value="必殺技を言う"/>
+	<div class="state">停止中</div>
+	<p>技名: <span id="recognizedText2"></span></p>
+	<p>技の戦闘力: <span id="viewText2"></span></p>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+$(function(){
+
+	var recognition = new webkitSpeechRecognition();
+	recognition.lang = "ja-JP";
+	var playNow;
+	var hp1=30;
+	var hp2=35;
+
+	$('#start01').on('click', function () {
+		playNow = 1;
+		quest();
+	});
+
+	$('#start02').on('click', function () {
+		playNow = 2;
+		quest();
+	});
+
+	var quest = function () {
+		recognition.start();
+	};
+
+	//話し声の認識中
+	recognition.onsoundstart = function(){
+		$(".state").text("認識中");
+	};
+	//マッチする認識が無い
+	recognition.onnomatch = function(){
+		if(playNow == 1){
+		$("#recognizedText1").text("もう一度試してください");
+		}
+		if(playNow == 2) {
+			$("#recognizedText2").text("もう一度試してください");
+		}
+
+	};
+	//エラー
+	recognition.onerror= function(){
+		if(playNow == 1){
+			$("#recognizedText1").text("エラー");
+		}
+		if(playNow == 2) {
+			$("#recognizedText2").text("エラー");
+		}
+	};
+
+	//話し声の認識終了
+	recognition.onsoundend = function(){
+		$(".state").text("停止中");
+	};
+
+	//認識が終了したときのイベント
+	recognition.onresult = function(event){
+		var results = event.results;
+
+
+		if(playNow == 1) {
+			for (var i = event.resultIndex; i<results.length; i++){
+				$("#recognizedText1").text(results[i][0].transcript);
+			}
+			var plus = 0;
+			var str_obj = $("#recognizedText1").text();
+			for(var j = 0; j < str_obj.length; j++){
+				plus = plus + str_obj.charCodeAt(j) % 10;
+			}
+			$("#viewText1").text(plus%10+1);
+			hp2 = hp2 - plus%10 - 1;
+			$("#hp2").text(hp2);
+		}
+
+		if(playNow == 2) {
+			for (var k = event.resultIndex; k<results.length; k++){
+				$("#recognizedText2").text(results[k][0].transcript);
+			}
+			var plus = 0;
+			var str_obj = $("#recognizedText2").text();
+			for(var l = 0; l < str_obj.length; l++){
+				plus = plus + str_obj.charCodeAt(l) % 10;
+			}
+			$("#viewText2").text(plus%10+1);
+			hp1 = hp1 - plus%10 - 1;
+			$("#hp1").text(hp1);
+
+		}
+
+
+	};
+
+
+
+});
+
+
+</script>
+</body>
+</html>
